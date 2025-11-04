@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Iframe - InmoLegal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        iframe {
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            display: block;
+            margin: 20px 0;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba de Iframe - InmoLegal</h1>
+        <p>Esta página te ayudará a diagnosticar problemas con el iframe del formulario.</p>
+
+        <!-- Test 1: Iframe directo -->
+        <div class="test-section">
+            <h2>Test 1: Iframe Directo (sin widget)</h2>
+            <p>Cargando directamente la URL del formulario en un iframe:</p>
+            <iframe 
+                id="test-iframe-1"
+                src="https://oceanairti.sytes.net/inmolegal/contrato" 
+                width="100%" 
+                height="600px"
+                onload="onIframeLoad('test-iframe-1')"
+                onerror="onIframeError('test-iframe-1')">
+            </iframe>
+            <div id="status-1"></div>
+        </div>
+
+        <!-- Test 2: Widget JavaScript -->
+        <div class="test-section">
+            <h2>Test 2: Con Widget JavaScript</h2>
+            <p>Usando el widget InmoLegalWidget:</p>
+            <div id="widget-test"></div>
+            <button onclick="loadWidget()">Cargar Widget</button>
+            <button onclick="reloadWidget()">Recargar</button>
+            <button onclick="destroyWidget()">Destruir</button>
+            <div id="status-2"></div>
+        </div>
+
+        <!-- Test 3: Desde otro dominio (CORS) -->
+        <div class="test-section">
+            <h2>Test 3: Headers de Respuesta</h2>
+            <p>Verificando headers HTTP de la página del formulario:</p>
+            <button onclick="checkHeaders()">Verificar Headers</button>
+            <div id="status-3"></div>
+            <pre id="headers-output" style="display:none;"></pre>
+        </div>
+
+        <!-- Información del navegador -->
+        <div class="test-section">
+            <h2>ℹ️ Información del Navegador</h2>
+            <pre id="browser-info"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Mostrar información del navegador
+        document.getElementById('browser-info').textContent = 
+            `Navegador: ${navigator.userAgent}\n` +
+            `Protocolo: ${window.location.protocol}\n` +
+            `Dominio actual: ${window.location.hostname}\n` +
+            `URL completa: ${window.location.href}`;
+
+        // Test 1: Iframe directo
+        function onIframeLoad(iframeId) {
+            const statusDiv = document.getElementById('status-1');
+            statusDiv.innerHTML = '<div class="success">✓ Iframe cargado correctamente</div>';
+            
+            const iframe = document.getElementById(iframeId);
+            console.log('Iframe loaded:', iframe.src);
+            
+            // Intentar acceder al contenido (puede fallar por CORS)
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const title = iframeDoc.title;
+                statusDiv.innerHTML += `<p>Título de la página: <strong>${title}</strong></p>`;
+            } catch (e) {
+                statusDiv.innerHTML += '<p>⚠️ No se puede acceder al contenido del iframe (política CORS)</p>';
+                console.warn('Cannot access iframe content:', e);
+            }
+        }
+
+        function onIframeError(iframeId) {
+            document.getElementById('status-1').innerHTML = 
+                '<div class="error">✗ Error al cargar el iframe</div>';
+        }
+
+        // Test 2: Widget
+        function loadWidget() {
+            const statusDiv = document.getElementById('status-2');
+            
+            if (!window.InmoLegalWidget) {
+                statusDiv.innerHTML = '<div class="error">✗ Script del widget no cargado</div>';
+                return;
+            }
+
+            try {
+                window.InmoLegalWidget.init({
+                    containerId: 'widget-test',
+                    height: '600px',
+                    onLoad: function(iframe) {
+                        statusDiv.innerHTML = '<div class="success">✓ Widget cargado correctamente</div>';
+                        console.log('Widget loaded');
+                    },
+                    onSubmit: function(data) {
+                        console.log('Form submitted:', data);
+                        statusDiv.innerHTML += '<div class="success">✓ Formulario enviado</div>';
+                    }
+                });
+            } catch (e) {
+                statusDiv.innerHTML = `<div class="error">✗ Error: ${e.message}</div>`;
+                console.error('Widget error:', e);
+            }
+        }
+
+        function reloadWidget() {
+            if (window.InmoLegalWidget && window.InmoLegalWidget.iframe) {
+                window.InmoLegalWidget.reload();
+                document.getElementById('status-2').innerHTML = 
+                    '<div class="success">✓ Widget recargado</div>';
+            } else {
+                document.getElementById('status-2').innerHTML = 
+                    '<div class="error">✗ Widget no está cargado</div>';
+            }
+        }
+
+        function destroyWidget() {
+            if (window.InmoLegalWidget) {
+                window.InmoLegalWidget.destroy();
+                document.getElementById('status-2').innerHTML = 
+                    '<div class="success">✓ Widget destruido</div>';
+            }
+        }
+
+        // Test 3: Headers
+        async function checkHeaders() {
+            const statusDiv = document.getElementById('status-3');
+            const outputPre = document.getElementById('headers-output');
+            
+            statusDiv.innerHTML = '<p>Verificando...</p>';
+            
+            try {
+                const response = await fetch('https://oceanairti.sytes.net/inmolegal/contrato', {
+                    method: 'HEAD'
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                outputPre.textContent = JSON.stringify(headers, null, 2);
+                outputPre.style.display = 'block';
+                
+                // Verificar X-Frame-Options
+                const xFrameOptions = response.headers.get('X-Frame-Options');
+                const csp = response.headers.get('Content-Security-Policy');
+                
+                let message = '<div class="success">✓ Headers obtenidos</div>';
+                
+                if (xFrameOptions) {
+                    if (xFrameOptions.toUpperCase() === 'DENY') {
+                        message += '<div class="error">⚠️ X-Frame-Options: DENY - Los iframes están bloqueados</div>';
+                    } else if (xFrameOptions.toUpperCase() === 'SAMEORIGIN') {
+                        message += '<div class="success">✓ X-Frame-Options: SAMEORIGIN - Iframes permitidos desde el mismo origen</div>';
+                    }
+                } else {
+                    message += '<div class="success">✓ No hay restricciones X-Frame-Options</div>';
+                }
+                
+                if (csp && csp.includes('frame-ancestors')) {
+                    message += `<div class="error">⚠️ Content-Security-Policy tiene restricciones: ${csp}</div>`;
+                } else {
+                    message += '<div class="success">✓ No hay restricciones CSP para frames</div>';
+                }
+                
+                statusDiv.innerHTML = message;
+            } catch (e) {
+                statusDiv.innerHTML = `<div class="error">✗ Error: ${e.message}</div>`;
+                console.error('Headers check error:', e);
+            }
+        }
+
+        // Escuchar mensajes postMessage
+        window.addEventListener('message', function(event) {
+            console.log('Message received:', event);
+        });
+    </script>
+
+    <!-- Cargar el widget -->
+    <script src="https://oceanairti.sytes.net/inmolegal/inmolegal-widget.js"></script>
+</body>
+</html>
