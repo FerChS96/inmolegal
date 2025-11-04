@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InmoLegal Widget - Ejemplos de Integración</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f3f4f6;
+            padding: 40px 20px;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 36px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .section h2 {
+            color: #374151;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .example {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .example h3 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        .demo-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9fafb;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            min-height: 200px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #6b7280;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .note strong {
+            color: #92400e;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 InmoLegal Widget</h1>
+        <p class="subtitle">Formulario de Contratos de Arrendamiento - Guía de Integración</p>
+
+        <!-- Características -->
+        <div class="section">
+            <h2>✨ Características</h2>
+            <ul class="feature-list">
+                <li>Fácil integración mediante iframe responsive</li>
+                <li>Auto-ajuste de altura (opcional)</li>
+                <li>Loader animado mientras carga</li>
+                <li>Compatible con cualquier sitio web</li>
+                <li>Sin dependencias externas</li>
+                <li>Callbacks personalizables</li>
+                <li>Estilos configurables</li>
+                <li>Mensajería postMessage para comunicación segura</li>
+            </ul>
+        </div>
+
+        <!-- Ejemplo 1: Integración Básica -->
+        <div class="section">
+            <h2>1️⃣ Integración Básica</h2>
+            <div class="example">
+                <h3>Código HTML</h3>
+                <pre><code>&lt;!-- Contenedor donde se cargará el formulario --&gt;
+&lt;div id="inmolegal-form"&gt;&lt;/div&gt;
+
+&lt;!-- Cargar el script del widget --&gt;
+&lt;script src="https://tu-dominio.com/inmolegal-widget.js"&gt;&lt;/script&gt;</code></pre>
+                <p style="margin-top: 15px; color: #6b7280;">
+                    ℹ️ El widget se inicializa automáticamente si existe un div con id <code>inmolegal-form</code>
+                </p>
+            </div>
+        </div>
+
+        <!-- Ejemplo 2: Configuración Personalizada -->
+        <div class="section">
+            <h2>2️⃣ Configuración Personalizada</h2>
+            <div class="example">
+                <h3>Con opciones avanzadas</h3>
+                <pre><code>&lt;div id="mi-formulario"&gt;&lt;/div&gt;
+
+&lt;script src="https://tu-dominio.com/inmolegal-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  InmoLegalWidget.init({
+    containerId: 'mi-formulario',     // ID del contenedor
+    height: '900px',                   // Altura fija (o 'auto')
+    width: '100%',                     // Ancho del iframe
+    borderRadius: '12px',              // Radio de bordes
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)', // Sombra
+    showLoader: true,                  // Mostrar loader
+    onLoad: function(iframe) {
+      console.log('Formulario cargado');
+    },
+    onSubmit: function(data) {
+      console.log('Formulario enviado:', data);
+    }
+  });
+&lt;/script&gt;</code></pre>
+            </div>
+        </div>
+
+        <!-- Ejemplo 3: WordPress -->
+        <div class="section">
+            <h2>3️⃣ Integración en WordPress</h2>
+            <div class="example">
+                <h3>Agregar en una página o entrada</h3>
+                <pre><code>&lt;!-- En el editor HTML de WordPress --&gt;
+&lt;div id="inmolegal-form"&gt;&lt;/div&gt;
+
+&lt;script src="https://tu-dominio.com/inmolegal-widget.js"&gt;&lt;/script&gt;</code></pre>
+                <p style="margin-top: 15px; color: #6b7280;">
+                    💡 <strong>Tip:</strong> Puedes crear un shortcode personalizado para reutilizar el widget
+                </p>
+            </div>
+        </div>
+
+        <!-- Ejemplo 4: React/Vue/Angular -->
+        <div class="section">
+            <h2>4️⃣ Integración en React/Vue/Angular</h2>
+            <div class="example">
+                <h3>React Component</h3>
+                <pre><code>import { useEffect } from 'react';
+
+function InmoLegalForm() {
+  useEffect(() => {
+    // Cargar script
+    const script = document.createElement('script');
+    script.src = 'https://tu-dominio.com/inmolegal-widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      window.InmoLegalWidget.init({
+        containerId: 'inmolegal-form',
+        height: '800px',
+        onSubmit: (data) => {
+          console.log('Formulario enviado:', data);
+        }
+      });
+    };
+
+    return () => {
+      document.body.removeChild(script);
+      window.InmoLegalWidget?.destroy();
+    };
+  }, []);
+
+  return &lt;div id="inmolegal-form"&gt;&lt;/div&gt;;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Opciones de Configuración -->
+        <div class="section">
+            <h2>⚙️ Opciones de Configuración</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="padding: 12px; text-align: left; font-weight: 700;">Opción</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 700;">Tipo</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 700;">Por Defecto</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 700;">Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>containerId</code></td>
+                        <td style="padding: 12px;">string</td>
+                        <td style="padding: 12px;">'inmolegal-form'</td>
+                        <td style="padding: 12px;">ID del elemento contenedor</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>height</code></td>
+                        <td style="padding: 12px;">string</td>
+                        <td style="padding: 12px;">'auto'</td>
+                        <td style="padding: 12px;">Altura del iframe ('auto' o px)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>width</code></td>
+                        <td style="padding: 12px;">string</td>
+                        <td style="padding: 12px;">'100%'</td>
+                        <td style="padding: 12px;">Ancho del iframe</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>borderRadius</code></td>
+                        <td style="padding: 12px;">string</td>
+                        <td style="padding: 12px;">'8px'</td>
+                        <td style="padding: 12px;">Radio de los bordes</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>boxShadow</code></td>
+                        <td style="padding: 12px;">string</td>
+                        <td style="padding: 12px;">'0 4px 6px...'</td>
+                        <td style="padding: 12px;">Sombra del contenedor</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>showLoader</code></td>
+                        <td style="padding: 12px;">boolean</td>
+                        <td style="padding: 12px;">true</td>
+                        <td style="padding: 12px;">Mostrar loader mientras carga</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>onLoad</code></td>
+                        <td style="padding: 12px;">function</td>
+                        <td style="padding: 12px;">null</td>
+                        <td style="padding: 12px;">Callback cuando carga el iframe</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;"><code>onSubmit</code></td>
+                        <td style="padding: 12px;">function</td>
+                        <td style="padding: 12px;">null</td>
+                        <td style="padding: 12px;">Callback cuando se envía el form</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Métodos del API -->
+        <div class="section">
+            <h2>🔧 Métodos del API</h2>
+            <div class="example">
+                <h3>Recargar el formulario</h3>
+                <pre><code>InmoLegalWidget.reload();</code></pre>
+            </div>
+            <div class="example">
+                <h3>Destruir el widget</h3>
+                <pre><code>InmoLegalWidget.destroy();</code></pre>
+            </div>
+        </div>
+
+        <!-- Nota importante -->
+        <div class="note">
+            <strong>⚠️ Importante:</strong> Recuerda cambiar la URL base en el archivo <code>inmolegal-widget.js</code> 
+            cuando lo subas a producción. Actualmente usa <code>window.location.origin</code> que funcionará en el mismo dominio.
+        </div>
+
+        <!-- Demo en Vivo -->
+        <div class="section">
+            <h2>🎯 Demo en Vivo</h2>
+            <p style="margin-bottom: 20px; color: #6b7280;">
+                Ejemplo del widget funcionando en esta página:
+            </p>
+            <div class="demo-container">
+                <div id="demo-widget" data-manual-init="true"></div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="loadDemo()">Cargar Widget</button>
+                <button class="btn btn-secondary" onclick="reloadDemo()">Recargar</button>
+                <button class="btn btn-secondary" onclick="destroyDemo()">Destruir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadDemo() {
+            // Cargar el widget en el contenedor demo
+            if (window.InmoLegalWidget) {
+                InmoLegalWidget.init({
+                    containerId: 'demo-widget',
+                    height: '700px',
+                    onLoad: function() {
+                        alert('✓ Widget cargado correctamente');
+                    }
+                });
+            } else {
+                alert('El script del widget no está cargado');
+            }
+        }
+
+        function reloadDemo() {
+            if (window.InmoLegalWidget && window.InmoLegalWidget.iframe) {
+                InmoLegalWidget.reload();
+            } else {
+                alert('Primero debes cargar el widget');
+            }
+        }
+
+        function destroyDemo() {
+            if (window.InmoLegalWidget) {
+                InmoLegalWidget.destroy();
+                alert('✓ Widget destruido');
+            }
+        }
+    </script>
+
+    <!-- Cargar el widget script -->
+    <script src="/inmolegal-widget.js"></script>
+</body>
+</html>

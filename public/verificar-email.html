@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificador de Configuración DNS/SPF</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .pass { background: #d4edda; border-color: #c3e6cb; }
+        .fail { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verificador de Dominio: inmolegalmx.com</h1>
+    
+    <div class="test info">
+        <h3>Instrucciones</h3>
+        <p>Ejecuta estos comandos en PowerShell para verificar la configuración del dominio:</p>
+    </div>
+
+    <div class="test">
+        <h3>1. Verificar registro SPF</h3>
+        <code>nslookup -type=TXT inmolegalmx.com</code>
+        <p><strong>Qué buscar:</strong> Un registro que contenga "v=spf1" y mencione a porkbun o el servidor SMTP</p>
+        <p><strong>Ejemplo correcto:</strong> "v=spf1 include:spf.porkbun.com ~all"</p>
+    </div>
+
+    <div class="test">
+        <h3>2. Verificar registro MX</h3>
+        <code>nslookup -type=MX inmolegalmx.com</code>
+        <p><strong>Qué buscar:</strong> Servidores de correo configurados</p>
+    </div>
+
+    <div class="test">
+        <h3>3. Verificar DKIM (si está configurado)</h3>
+        <code>nslookup -type=TXT default._domainkey.inmolegalmx.com</code>
+        <p><strong>Qué buscar:</strong> Una clave pública DKIM</p>
+    </div>
+
+    <h2>Herramientas Online</h2>
+    <div class="test info">
+        <p>También puedes usar estas herramientas:</p>
+        <ul>
+            <li><strong>MXToolbox:</strong> <a href="https://mxtoolbox.com/SuperTool.aspx?action=spf%3ainmolegalmx.com" target="_blank">Check SPF</a></li>
+            <li><strong>Mail Tester:</strong> <a href="https://www.mail-tester.com/" target="_blank">Test Email Score</a></li>
+            <li><strong>DMARC Analyzer:</strong> <a href="https://dmarc.org/dmarc-tools/" target="_blank">Check DMARC</a></li>
+        </ul>
+    </div>
+
+    <h2>⚠️ Posibles Problemas</h2>
+    <div class="test">
+        <h3>Si el correo no llega a Gmail:</h3>
+        <ol>
+            <li><strong>No hay SPF configurado:</strong> Gmail puede marcar como spam</li>
+            <li><strong>No hay DKIM:</strong> Menor confiabilidad del remitente</li>
+            <li><strong>Dominio nuevo:</strong> Baja reputación inicial</li>
+            <li><strong>IP del servidor:</strong> Puede estar en listas negras</li>
+        </ol>
+    </div>
+
+    <div class="test info">
+        <h3>Prueba con Mail-Tester</h3>
+        <p>1. Ve a <a href="https://www.mail-tester.com/" target="_blank">mail-tester.com</a></p>
+        <p>2. Copia el email temporal que te dan</p>
+        <p>3. Ejecuta: <code>php artisan email:test [email-de-mail-tester]</code></p>
+        <p>4. Revisa el score (debería ser al menos 8/10)</p>
+    </div>
+</body>
+</html>

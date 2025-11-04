@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo de Integración - API Contratos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .demo-box {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #1f7ae0;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #1558b0;
+        }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 Ejemplo de Integración con API de Contratos</h1>
+    
+    <div class="demo-box">
+        <h2>Configuración</h2>
+        <p>Actualiza la URL del API según tu entorno:</p>
+        <pre>const API_URL = 'http://localhost:8000/api/contrato';</pre>
+    </div>
+
+    <div class="demo-box">
+        <h2>Prueba de Integración</h2>
+        <p>Este botón enviará datos de prueba al API:</p>
+        <button onclick="testAPI()">Probar Crear Contrato</button>
+        <div id="result"></div>
+    </div>
+
+    <div class="demo-box">
+        <h2>Código de Ejemplo</h2>
+        <pre><code>// JavaScript - Integración con el API
+const formData = {
+  email: "cliente@ejemplo.com",
+  email_confirmation: "cliente@ejemplo.com",
+  nombre_arrendador: "Juan Pérez García",
+  curp_arrendador: "PEGJ850315HDFRRN09",
+  nombre_arrendatario: "María López Sánchez",
+  curp_arrendatario: "LOSM900520MDFRNN08",
+  tiene_fiador: false,
+  tipo_inmueble: "DEPARTAMENTO",
+  uso_inmueble: "HABITACIONAL",
+  ubicacion: "Av. Reforma 123, Col. Centro",
+  estado: "CIUDAD DE MEXICO",
+  fecha_inicio: "2025-11-01",
+  plazo_meses: 12,
+  pago: 8500.00,
+  forma_pago: "TRANSFERENCIA"
+};
+
+fetch('http://localhost:8000/api/contrato', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  body: JSON.stringify(formData)
+})
+.then(response => response.json())
+.then(data => {
+  if (data.success) {
+    console.log('Token:', data.token);
+    console.log('Pago ID:', data.pago_id);
+    // Redirigir al pago
+    window.location.href = data.redirect_payment;
+  } else {
+    console.error('Errores:', data.errors);
+  }
+});</code></pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api/contrato';
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>⏳ Enviando solicitud...</p>';
+
+            const formData = {
+                email: "test@ejemplo.com",
+                email_confirmation: "test@ejemplo.com",
+                nombre_arrendador: "Juan Pérez García",
+                curp_arrendador: "PEGJ850315HDFRRN09",
+                nombre_arrendatario: "María López Sánchez",
+                curp_arrendatario: "LOSM900520MDFRNN08",
+                tiene_fiador: false,
+                nombre_fiador: null,
+                curp_fiador: null,
+                tipo_inmueble: "DEPARTAMENTO",
+                uso_inmueble: "HABITACIONAL",
+                ubicacion: "Av. Reforma 123, Col. Centro, CP 06000",
+                estado: "CIUDAD DE MEXICO",
+                fecha_inicio: "2025-11-01",
+                plazo_meses: 12,
+                pago: 8500.00,
+                forma_pago: "TRANSFERENCIA"
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Éxito</h3>
+                            <p><strong>Token:</strong> ${data.token}</p>
+                            <p><strong>Contrato ID:</strong> ${data.contrato_id}</p>
+                            <p><strong>Pago ID:</strong> ${data.pago_id}</p>
+                            <p><strong>Monto:</strong> $${data.amount} MXN</p>
+                            <p><strong>Link de Pago:</strong> <a href="${data.redirect_payment}" target="_blank">${data.redirect_payment}</a></p>
+                            <button onclick="window.open('${data.redirect_payment}', '_blank')">Ir al Pago</button>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error de Validación</h3>
+                            <pre>${JSON.stringify(data.errors, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error de Conexión</h3>
+                        <p>${error.message}</p>
+                        <p><em>Asegúrate de que el servidor Laravel esté corriendo en http://localhost:8000</em></p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
