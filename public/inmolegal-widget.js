@@ -22,8 +22,8 @@
     const InmoLegalWidget = {
         version: '1.0.0',
         config: {
-            // URL base del servidor (cambiar en producción)
-            baseUrl: window.location.origin,
+            // URL base del servidor - CAMBIAR EN PRODUCCIÓN
+            baseUrl: 'https://oceanairti.sytes.net/inmolegal',
             // ID del contenedor por defecto
             containerId: 'inmolegal-form',
             // Altura del iframe
