@@ -59,22 +59,47 @@ class ClipPaymentController extends Controller
                 ], 404);
             }
 
-            // Crear checkout link en Clip
-            $authToken = $this->getAuthToken();
-            
+            // MODO MOCK: Simular pago sin llamar a la API real de Clip
+            if (env('CLIP_ENVIRONMENT') === 'mock') {
+                Log::info('Modo MOCK activado - Simulando pago de Clip', [
+                    'pago_id' => $pago->idpago,
+                    'amount' => $pago->amount,
+                ]);
+
+                // Generar ID de pago simulado
+                $mockPaymentId = 'mock_' . uniqid();
+                $mockCheckoutUrl = route('clip.success', ['token' => $contrato->token]) . '?mock=true';
+
+                // Actualizar registro de pago con datos simulados
+                $pago->update([
+                    'payment_request_id' => $mockPaymentId,
+                    'checkout_url' => $mockCheckoutUrl,
+                    'payment_created_at' => now(),
+                    'payment_expires_at' => now()->addHours(24),
+                    'clip_checkout_response' => [
+                        'mode' => 'mock',
+                        'payment_request_id' => $mockPaymentId,
+                        'message' => 'Pago simulado - Modo de prueba sin API real'
+                    ],
+                ]);
+
+                // Redirigir directamente a success (simulando pago exitoso)
+                return redirect($mockCheckoutUrl);
+            }
+
+            // MODO REAL: Crear checkout en Clip
             Log::info('Intentando crear checkout en Clip', [
-                'api_key' => substr($this->apiKey, 0, 15) . '...', 
                 'api_url' => $this->apiUrl . '/v2/checkout',
-                'auth_token_preview' => 'Basic ' . substr($authToken, 0, 20) . '...',
                 'amount' => $pago->amount,
             ]);
             
+            // Clip requiere Basic Auth con API_KEY:SECRET_KEY
             $response = Http::withOptions([
                 'verify' => false, // Deshabilitar verificación SSL solo para desarrollo
-            ])->withHeaders([
+            ])->withBasicAuth($this->apiKey, env('CLIP_SECRET_KEY'))
+              ->withHeaders([
                 'accept' => 'application/json',
                 'content-type' => 'application/json',
-                'authorization' => 'Basic ' . $authToken,
             ])->post($this->apiUrl . '/v2/checkout', [
                 'amount' => $pago->amount,
                 'currency' => 'MXN',

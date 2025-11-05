@@ -468,8 +468,9 @@
     </div>
 
     <script>
-        // Configuración
-        const API_URL = '/api/contrato';
+        // Configuración - Usar url() de Laravel para generar la URL correcta con subdirectorio
+        const API_URL = '{{ url("/api/contrato") }}';
+        console.log('API_URL configurada:', API_URL);
         const fechaInicioInput = document.getElementById('fecha_inicio');
         const today = new Date().toISOString().split('T')[0];
         fechaInicioInput.value = today;
@@ -712,7 +713,20 @@
                     body: JSON.stringify(data)
                 });
 
+                // Verificar el tipo de contenido de la respuesta
+                const contentType = response.headers.get('content-type');
+                console.log('Response status:', response.status);
+                console.log('Content-Type:', contentType);
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    // La respuesta no es JSON, probablemente HTML de error
+                    const htmlText = await response.text();
+                    console.error('Respuesta HTML recibida (esperaba JSON):', htmlText.substring(0, 500));
+                    throw new Error('El servidor devolvió HTML en lugar de JSON. Verifica la configuración de rutas.');
+                }
+
                 const result = await response.json();
+                console.log('Result:', result);
 
                 if (result.success) {
                     showAlert('✅ Formulario procesado. Redirigiendo al pago...', 'success');
@@ -740,7 +754,7 @@
                     document.getElementById('loading').classList.remove('show');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error completo:', error);
                 showAlert('❌ Error de conexión: ' + error.message, 'error');
                 document.getElementById('btnSubmit').disabled = false;
                 document.getElementById('loading').classList.remove('show');
