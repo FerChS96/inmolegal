@@ -567,7 +567,7 @@
                             <span class="error-message">Seleccione una fecha válida</span>
                         </div>
                         <div class="input-group">
-                            <label for="plazo_meses"><i class="fa-solid fa-hourglass-half"></i> Plazo (meses) *</label>
+                            <label for="plazo_meses"><i class="fa-solid fa-hourglass-half"></i> Plazo (meses) - Máximo 48 *</label>
                             <input type="number" id="plazo_meses" name="plazo_meses" min="1" max="48" required>
                             <span class="error-message">Máximo 48 meses</span>
                         </div>
