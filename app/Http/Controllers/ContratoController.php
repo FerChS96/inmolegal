@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contrato;
 use App\Models\Pago;
+use App\Helpers\ContratoHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,9 +60,29 @@ class ContratoController extends Controller
             'fecha_inicio' => 'required|date',
             'plazo_meses' => 'required|integer|min:1|max:48',
             'pago' => 'required|numeric|min:1',
-            'forma_pago' => 'required|string',
-            'cuenta_domicilio' => 'nullable|string|max:255',
-            'email_confirmation' => 'required|email|same:email',
+            'forma_pago' => 'required|string|in:EFECTIVO,TRANSFERENCIA',
+            'cuenta_domicilio' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    $formaPago = $request->input('forma_pago');
+                    
+                    if ($formaPago === 'TRANSFERENCIA') {
+                        // Si es transferencia, debe ser CLABE de 18 dígitos
+                        if (!preg_match('/^[0-9]{18}$/', $value)) {
+                            $fail('La Cuenta CLABE debe tener exactamente 18 dígitos numéricos.');
+                        }
+                    } elseif ($formaPago === 'EFECTIVO') {
+                        // Si es efectivo, debe ser un domicilio con al menos 10 caracteres
+                        if (strlen($value) < 10) {
+                            $fail('El domicilio para pago debe tener al menos 10 caracteres.');
+                        }
+                        if (strlen($value) > 255) {
+                            $fail('El domicilio no puede exceder 255 caracteres.');
+                        }
+                    }
+                }
+            ],
         ], [
             'curp_arrendador.size' => 'El CURP del arrendador debe tener exactamente 18 caracteres',
             'curp_arrendador.regex' => 'El CURP del arrendador no tiene un formato válido',
@@ -73,7 +94,8 @@ class ContratoController extends Controller
             'codigo_postal.regex' => 'El código postal solo debe contener números',
             'plazo_meses.max' => 'El plazo máximo es de 48 meses',
             'pago.min' => 'El pago debe ser mayor a cero',
-            'email_confirmation.same' => 'El correo de confirmación debe coincidir',
+            'forma_pago.in' => 'La forma de pago debe ser EFECTIVO o TRANSFERENCIA',
+            'cuenta_domicilio.required' => 'Debe proporcionar la cuenta CLABE o el domicilio según la forma de pago',
         ]);
 
         if ($validator->fails()) {
@@ -103,6 +125,28 @@ class ContratoController extends Controller
 
             // Preparar monto
             $monto = (float) $request->pago;
+
+            // Calcular campos adicionales usando ContratoHelper
+            $elArrendador = ContratoHelper::obtenerGeneroYArticulo($request->curp_arrendador, 'ARRENDADOR', 'ARRENDADORA');
+            $elArrendatario = ContratoHelper::obtenerGeneroYArticulo($request->curp_arrendatario, 'ARRENDATARIO', 'ARRENDATARIA');
+            $inmuebleObjeto = ContratoHelper::obtenerInmuebleConArticulo($request->tipo_inmueble);
+            $precioEnLetra = ContratoHelper::numeroALetras($monto);
+            $codigoEstado = ContratoHelper::obtenerCodigoEstado($request->estado);
+            $cuentaFormateada = ContratoHelper::obtenerCuentaFormateada($request->forma_pago, $request->cuenta_domicilio ?? '');
+            
+            // Calcular campos del fiador si existe
+            $elFiador = null;
+            $elFiador1 = null;
+            $nombreFiador1 = null;
+            $clausulaFiador = null;
+            
+            if ($request->boolean('tiene_fiador') && $request->curp_fiador) {
+                $elFiador = ContratoHelper::obtenerGeneroYArticulo($request->curp_fiador, 'FIADOR', 'FIADORA');
+                $elFiador1 = "y como {$elFiador} ";
+                $nombreFiador = strtoupper($request->nombres_fiador . ' ' . $request->apellido_paterno_fiador . ' ' . $request->apellido_materno_fiador);
+                $nombreFiador1 = "{$nombreFiador} con CURP ";
+                $clausulaFiador = "<b>Décima primera Bis.</b> {$elFiador}, se constituye como personal y solidario de las obligaciones dimanantes de este contrato de arrendamiento. Manifiesta que su obligación será vinculante tanto durante el periodo contractual como durante las sucesivas prórrogas que pudieran producirse, del tipo que sean, e incluso para el caso de tácita reconducción. {$elFiador} se obliga a pagar o cumplir todas y cada una de las obligaciones de la parte arrendataria en caso de incumplimiento y renuncia en este acto al beneficio de orden y al derecho de excusión.";
+            }
 
             // Crear registro de contrato (temporal, sin pagar)
             $contrato = Contrato::create([
@@ -142,6 +186,17 @@ class ContratoController extends Controller
                 'forma_pago' => $request->forma_pago,
                 'cuenta_domicilio' => $request->cuenta_domicilio ?? null,
                 'pagado' => false,
+                // Campos calculados
+                'el_arrendador' => $elArrendador,
+                'el_arrendatario' => $elArrendatario,
+                'inmueble_objeto' => $inmuebleObjeto,
+                'precio_en_letra' => $precioEnLetra,
+                'codigo_estado_texto' => $codigoEstado,
+                'cuenta_formateada' => $cuentaFormateada,
+                'el_fiador' => $elFiador,
+                'el_fiador1' => $elFiador1,
+                'nombre_fiador1' => $nombreFiador1,
+                'clausula_fiador' => $clausulaFiador,
             ]);
 
             // Crear registro de pago pendiente

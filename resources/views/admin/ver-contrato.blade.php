@@ -172,7 +172,7 @@
                 <div class="info-item">
                     <div class="info-label">Estado de Pago</div>
                     <div class="info-value">
-                        @if($contrato->fecha_pago)
+                        @if($contrato->pagado)
                             <span class="badge badge-success">✓ Pagado</span>
                         @else
                             <span class="badge badge-warning">⏳ Pendiente</span>
@@ -195,6 +195,12 @@
                     <div class="info-label">Método de Pago</div>
                     <div class="info-value">{{ $contrato->metodo_pago ?? 'N/A' }}</div>
                 </div>
+                <div class="info-item">
+                    <div class="info-label">ID de Pago</div>
+                    <div class="info-value" style="font-family: 'Courier New', monospace; font-size: 12px;">
+                        {{ $contrato->pago_id ?? 'N/A' }}
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -203,23 +209,15 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Nombre Completo</div>
-                    <div class="info-value">
-                        {{ $contrato->nombres_arrendatario }} 
-                        {{ $contrato->apellido_paterno_arrendatario }} 
-                        {{ $contrato->apellido_materno_arrendatario }}
-                    </div>
+                    <div class="info-value">{{ $contrato->nombre_arrendatario }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">CURP</div>
                     <div class="info-value">{{ $contrato->curp_arrendatario }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ $contrato->email }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Teléfono</div>
-                    <div class="info-value">{{ $contrato->telefono ?? 'N/A' }}</div>
+                    <div class="info-label">Género (calculado)</div>
+                    <div class="info-value">{{ $contrato->el_arrendatario ?? 'N/A' }}</div>
                 </div>
             </div>
         </div>
@@ -229,22 +227,54 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Nombre Completo</div>
-                    <div class="info-value">
-                        {{ $contrato->nombres_arrendador }} 
-                        {{ $contrato->apellido_paterno_arrendador }} 
-                        {{ $contrato->apellido_materno_arrendador }}
-                    </div>
+                    <div class="info-value">{{ $contrato->nombre_arrendador }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">CURP</div>
                     <div class="info-value">{{ $contrato->curp_arrendador }}</div>
                 </div>
+                <div class="info-item">
+                    <div class="info-label">Género (calculado)</div>
+                    <div class="info-value">{{ $contrato->el_arrendador ?? 'N/A' }}</div>
+                </div>
             </div>
         </div>
+
+        @if($contrato->tiene_fiador)
+        <div class="section">
+            <h2>Información del Fiador</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nombre Completo</div>
+                    <div class="info-value">{{ $contrato->nombre_fiador }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">CURP</div>
+                    <div class="info-value">{{ $contrato->curp_fiador }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Género (calculado)</div>
+                    <div class="info-value">{{ $contrato->el_fiador ?? 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <div class="section">
             <h2>Inmueble</h2>
             <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Tipo de Inmueble</div>
+                    <div class="info-value">{{ ucfirst($contrato->tipo_inmueble) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Uso del Inmueble</div>
+                    <div class="info-value">{{ $contrato->uso_inmueble }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Inmueble (calculado)</div>
+                    <div class="info-value">{{ $contrato->inmueble_objeto ?? 'N/A' }}</div>
+                </div>
                 <div class="info-item">
                     <div class="info-label">Dirección Completa</div>
                     <div class="info-value">
@@ -274,12 +304,28 @@
                     <div class="info-value">${{ number_format($contrato->precio_mensual, 2) }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Forma de Pago</div>
-                    <div class="info-value">{{ ucfirst($contrato->forma_pago) }}</div>
+                    <div class="info-label">Precio en Letra (calculado)</div>
+                    <div class="info-value">{{ $contrato->precio_en_letra ?? 'N/A' }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Día de Pago</div>
-                    <div class="info-value">{{ $contrato->dia_pago }}</div>
+                    <div class="info-label">Forma de Pago</div>
+                    <div class="info-value">{{ $contrato->forma_pago }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Cuenta/Domicilio de Pago</div>
+                    <div class="info-value">{{ $contrato->cuenta_domicilio ?? 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Cuenta Formateada (calculado)</div>
+                    <div class="info-value">{{ $contrato->cuenta_formateada ?? 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value">{{ $contrato->codigo_estado }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Estado Texto (calculado)</div>
+                    <div class="info-value">{{ $contrato->codigo_estado_texto ?? 'N/A' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Fecha de Creación</div>

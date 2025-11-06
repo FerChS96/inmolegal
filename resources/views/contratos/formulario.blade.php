@@ -198,6 +198,158 @@
             max-width: 200px;
             height: auto;
         }
+        
+        /* Modal de Satisfacción */
+        .satisfaction-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .satisfaction-modal.show {
+            display: flex;
+        }
+        .satisfaction-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+        .satisfaction-content h3 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 24px;
+        }
+        .satisfaction-content p {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .satisfaction-options {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        .emoji-btn {
+            background: none;
+            border: 3px solid transparent;
+            font-size: 64px;
+            cursor: pointer;
+            padding: 20px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .emoji-btn:hover {
+            transform: scale(1.1);
+            background: #f9fafb;
+        }
+        .emoji-btn.sad:hover {
+            border-color: #f59e0b;
+        }
+        .emoji-btn.happy:hover {
+            border-color: #10b981;
+        }
+        
+        /* Animación de Generando Contrato */
+        .generating-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(103, 126, 234, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+        .generating-overlay.show {
+            display: flex;
+        }
+        .generating-content {
+            text-align: center;
+            color: white;
+        }
+        .generating-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .generating-content h3 {
+            font-size: 28px;
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+        .generating-content p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        .progress-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            animation: progressAnimation 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        @keyframes progressAnimation {
+            0% {
+                width: 0%;
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                width: 100%;
+                opacity: 0.5;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -272,16 +424,12 @@
                             <span class="error-message">El CURP debe tener 18 caracteres</span>
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="input-group">
                             <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico *</label>
                             <input type="email" id="email" name="email" required>
                             <span class="error-message">Ingrese un email válido</span>
-                        </div>
-                        <div class="input-group">
-                            <label for="email_confirmation"><i class="fa-solid fa-envelope-circle-check"></i> Confirmar Correo *</label>
-                            <input type="email" id="email_confirmation" name="email_confirmation" required>
-                            <span class="error-message">El correo debe coincidir</span>
                         </div>
                     </div>
 
@@ -331,16 +479,10 @@
                             </select>
                             <span class="error-message">Seleccione una opción</span>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group" id="uso_inmueble_group">
                             <label for="uso_inmueble"><i class="fa-solid fa-briefcase"></i> Uso del Inmueble *</label>
-                            <select id="uso_inmueble" name="uso_inmueble" required>
-                                <option value="">Seleccione...</option>
-                                <option value="HABITACIONAL">Habitacional</option>
-                                <option value="COMERCIAL">Comercial</option>
-                                <option value="INDUSTRIAL">Industrial</option>
-                                <option value="MIXTO">Mixto</option>
-                            </select>
-                            <span class="error-message">Seleccione una opción</span>
+                            <input type="text" id="uso_inmueble" name="uso_inmueble" required readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                            <span class="error-message">Este campo es obligatorio</span>
                         </div>
                     </div>
 
@@ -449,17 +591,58 @@
                             <select id="forma_pago" name="forma_pago" required>
                                 <option value="">Seleccione...</option>
                                 <option value="EFECTIVO">Efectivo</option>
-                                <option value="TARJETA">Tarjeta de Crédito/Débito</option>
+                                <option value="TRANSFERENCIA">Transferencia electrónica</option>
                             </select>
                             <span class="error-message">Seleccione una forma de pago</span>
                         </div>
                     </div>
+
+                    <!-- Campo dinámico: Cuenta CLABE o Domicilio -->
+                    <div class="row" id="cuenta_domicilio_container" style="display: none;">
+                        <div class="input-group">
+                            <label for="cuenta_domicilio" id="cuenta_domicilio_label">
+                                <i class="fa-solid fa-building-columns"></i> Cuenta CLABE *
+                            </label>
+                            <input type="text" id="cuenta_domicilio" name="cuenta_domicilio" maxlength="255">
+                            <span class="error-message" id="cuenta_domicilio_error">Este campo es requerido</span>
+                        </div>
+                    </div>
                 </fieldset>
 
-                <button type="submit" class="btn-submit" id="btnSubmit">
-                    <i class="fa-solid fa-credit-card"></i> Proceder al Pago
+                <button type="button" class="btn-submit" id="btnSubmit">
+                    <i class="fa-solid fa-file-contract"></i> Generar Contrato
                 </button>
             </form>
+
+            <!-- Animación de Generando Contrato -->
+            <div class="generating-overlay" id="generatingOverlay">
+                <div class="generating-content">
+                    <div class="generating-icon">
+                        <i class="fa-solid fa-file-contract fa-bounce"></i>
+                    </div>
+                    <h3>Generando tu contrato</h3>
+                    <p>Por favor espera un momento...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Encuesta de Satisfacción -->
+            <div class="satisfaction-modal" id="satisfactionModal">
+                <div class="satisfaction-content">
+                    <h3>¿Cómo fue tu experiencia con el formulario?</h3>
+                    <p>Tu opinión nos ayuda a mejorar</p>
+                    <div class="satisfaction-options">
+                        <button type="button" class="emoji-btn sad" id="btnSad" title="Necesita mejorar">
+                            😔
+                        </button>
+                        <button type="button" class="emoji-btn happy" id="btnHappy" title="¡Excelente!">
+                            😊
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <div class="loading" id="loading">
                 <p><i class="fa-solid fa-spinner fa-spin"></i> Procesando su solicitud...</p>
@@ -612,13 +795,137 @@
             });
         });
 
-        // Submit del formulario
-        document.getElementById('contratoForm').addEventListener('submit', async function(e) {
+        // ============================================
+        // CAMPO DINÁMICO CUENTA/DOMICILIO SEGÚN FORMA DE PAGO
+        // ============================================
+        const formaPagoSelect = document.getElementById('forma_pago');
+        const cuentaDomicilioContainer = document.getElementById('cuenta_domicilio_container');
+        const cuentaDomicilioInput = document.getElementById('cuenta_domicilio');
+        const cuentaDomicilioLabel = document.getElementById('cuenta_domicilio_label');
+        const cuentaDomicilioError = document.getElementById('cuenta_domicilio_error');
+
+        formaPagoSelect.addEventListener('change', function() {
+            const formaPago = this.value;
+            
+            if (formaPago === 'TRANSFERENCIA') {
+                // Mostrar campo para Cuenta CLABE
+                cuentaDomicilioContainer.style.display = 'block';
+                cuentaDomicilioLabel.innerHTML = '<i class="fa-solid fa-building-columns"></i> Cuenta CLABE *';
+                cuentaDomicilioInput.placeholder = 'Ingrese 18 dígitos de la CLABE';
+                cuentaDomicilioInput.maxLength = 18;
+                cuentaDomicilioInput.pattern = '[0-9]{18}';
+                cuentaDomicilioInput.required = true;
+                cuentaDomicilioInput.value = '';
+                cuentaDomicilioError.textContent = 'Ingrese una CLABE válida de 18 dígitos';
+                
+                // Validación en tiempo real para CLABE (solo números, 18 dígitos)
+                cuentaDomicilioInput.removeEventListener('input', validarDomicilio);
+                cuentaDomicilioInput.addEventListener('input', validarCLABE);
+                
+            } else if (formaPago === 'EFECTIVO') {
+                // Mostrar campo para Domicilio
+                cuentaDomicilioContainer.style.display = 'block';
+                cuentaDomicilioLabel.innerHTML = '<i class="fa-solid fa-location-dot"></i> Domicilio para Pago *';
+                cuentaDomicilioInput.placeholder = 'Ej: Calle Principal #123, Col. Centro';
+                cuentaDomicilioInput.maxLength = 255;
+                cuentaDomicilioInput.removeAttribute('pattern');
+                cuentaDomicilioInput.required = true;
+                cuentaDomicilioInput.value = '';
+                cuentaDomicilioError.textContent = 'Ingrese el domicilio donde se realizará el pago';
+                
+                // Validación en tiempo real para domicilio
+                cuentaDomicilioInput.removeEventListener('input', validarCLABE);
+                cuentaDomicilioInput.addEventListener('input', validarDomicilio);
+                
+            } else {
+                // Ocultar campo si no hay forma de pago seleccionada
+                cuentaDomicilioContainer.style.display = 'none';
+                cuentaDomicilioInput.required = false;
+                cuentaDomicilioInput.value = '';
+            }
+            
+            // Limpiar estado de error
+            cuentaDomicilioInput.classList.remove('error');
+            cuentaDomicilioError.style.display = 'none';
+        });
+
+        // Función de validación para CLABE
+        function validarCLABE() {
+            const input = cuentaDomicilioInput;
+            const errorSpan = cuentaDomicilioError;
+            
+            // Solo números
+            input.value = input.value.replace(/[^0-9]/g, '');
+            
+            if (input.value.length > 0) {
+                if (input.value.length === 18) {
+                    input.classList.remove('error');
+                    errorSpan.style.display = 'none';
+                } else {
+                    input.classList.add('error');
+                    errorSpan.textContent = `Faltan ${18 - input.value.length} dígitos`;
+                    errorSpan.style.display = 'block';
+                }
+            } else {
+                input.classList.remove('error');
+                errorSpan.style.display = 'none';
+            }
+        }
+
+        // Función de validación para Domicilio
+        function validarDomicilio() {
+            const input = cuentaDomicilioInput;
+            const errorSpan = cuentaDomicilioError;
+            
+            if (input.value.length > 0) {
+                if (input.value.length >= 10) {
+                    input.classList.remove('error');
+                    errorSpan.style.display = 'none';
+                } else {
+                    input.classList.add('error');
+                    errorSpan.textContent = 'El domicilio debe tener al menos 10 caracteres';
+                    errorSpan.style.display = 'block';
+                }
+            } else {
+                input.classList.remove('error');
+                errorSpan.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // ENCUESTA DE SATISFACCIÓN Y SUBMIT
+        // ============================================
+        const btnSubmit = document.getElementById('btnSubmit');
+        const satisfactionModal = document.getElementById('satisfactionModal');
+        const generatingOverlay = document.getElementById('generatingOverlay');
+        const btnSad = document.getElementById('btnSad');
+        const btnHappy = document.getElementById('btnHappy');
+        const contratoForm = document.getElementById('contratoForm');
+
+        // Al hacer click en "Generar Contrato"
+        btnSubmit.addEventListener('click', function(e) {
             e.preventDefault();
 
-            // Validaciones
+            // Validar formulario primero
+            if (!validateForm()) {
+                return;
+            }
+
+            // Mostrar animación de "Generando contrato"
+            generatingOverlay.classList.add('show');
+
+            // Después de 2 segundos, mostrar encuesta de satisfacción
+            setTimeout(() => {
+                generatingOverlay.classList.remove('show');
+                satisfactionModal.classList.add('show');
+            }, 2000);
+        });
+
+        // Función de validación
+        function validateForm() {
             let valid = true;
-            const requiredFields = this.querySelectorAll('[required]');
+            const requiredFields = contratoForm.querySelectorAll('[required]');
+            
             requiredFields.forEach(field => {
                 const errorSpan = field.parentElement.querySelector('.error-message');
                 const value = field.value;
@@ -633,70 +940,55 @@
                 }
             });
 
-            const emailField = document.getElementById('email');
-            const emailConfirmationField = document.getElementById('email_confirmation');
-            const emailConfirmError = emailConfirmationField.parentElement.querySelector('.error-message');
-
-            if (emailField.value && emailConfirmationField.value && emailField.value !== emailConfirmationField.value) {
-                emailConfirmationField.classList.add('error');
-                if (emailConfirmError) {
-                    emailConfirmError.textContent = 'Los correos deben coincidir';
-                    emailConfirmError.style.display = 'block';
-                }
-                valid = false;
-            } else {
-                emailConfirmationField.classList.remove('error');
-                if (emailConfirmError) {
-                    emailConfirmError.style.display = 'none';
-                }
-            }
-
-            const pagoField = document.getElementById('pago');
-            if (parseFloat(pagoField.value) <= 0) {
-                pagoField.classList.add('error');
-                const errorSpan = pagoField.parentElement.querySelector('.error-message');
-                if (errorSpan) errorSpan.style.display = 'block';
-                valid = false;
-            }
-
-            // Validar CURP con formato oficial mexicano
-            const curpArrendador = document.getElementById('curp_arrendador').value;
-            const curpArrendatario = document.getElementById('curp_arrendatario').value;
-            const curpRegex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$/;
+            // Validación específica para cuenta_domicilio según forma de pago
+            const formaPago = formaPagoSelect.value;
+            const cuentaDomicilio = cuentaDomicilioInput.value;
             
-            if (curpArrendador.length !== 18 || !curpRegex.test(curpArrendador)) {
-                const campoArrendador = document.getElementById('curp_arrendador');
-                campoArrendador.classList.add('error');
-                const errorSpan = campoArrendador.parentElement.querySelector('.error-message');
-                if (errorSpan) {
-                    errorSpan.textContent = curpArrendador.length !== 18 ? 'El CURP debe tener 18 caracteres' : 'Formato de CURP inválido';
-                    errorSpan.style.display = 'block';
+            if (formaPago === 'TRANSFERENCIA' && cuentaDomicilio) {
+                // Validar que sea una CLABE de 18 dígitos
+                if (!/^[0-9]{18}$/.test(cuentaDomicilio)) {
+                    cuentaDomicilioInput.classList.add('error');
+                    cuentaDomicilioError.textContent = 'La CLABE debe tener exactamente 18 dígitos';
+                    cuentaDomicilioError.style.display = 'block';
+                    valid = false;
                 }
-                valid = false;
-            }
-            
-            if (curpArrendatario.length !== 18 || !curpRegex.test(curpArrendatario)) {
-                const campoArrendatario = document.getElementById('curp_arrendatario');
-                campoArrendatario.classList.add('error');
-                const errorSpan = campoArrendatario.parentElement.querySelector('.error-message');
-                if (errorSpan) {
-                    errorSpan.textContent = curpArrendatario.length !== 18 ? 'El CURP debe tener 18 caracteres' : 'Formato de CURP inválido';
-                    errorSpan.style.display = 'block';
+            } else if (formaPago === 'EFECTIVO' && cuentaDomicilio) {
+                // Validar que el domicilio tenga al menos 10 caracteres
+                if (cuentaDomicilio.length < 10) {
+                    cuentaDomicilioInput.classList.add('error');
+                    cuentaDomicilioError.textContent = 'El domicilio debe tener al menos 10 caracteres';
+                    cuentaDomicilioError.style.display = 'block';
+                    valid = false;
                 }
-                valid = false;
             }
 
             if (!valid) {
-                showAlert('Por favor complete todos los campos requeridos correctamente', 'error');
-                return;
+                showAlert('⚠️ Por favor complete todos los campos obligatorios', 'error');
             }
 
+            return valid;
+        }
+
+        // Al hacer click en un emoji, proceder al pago
+        btnSad.addEventListener('click', function() {
+            proceedToPayment();
+        });
+
+        btnHappy.addEventListener('click', function() {
+            proceedToPayment();
+        });
+
+        // Función para proceder al pago
+        async function proceedToPayment() {
+            // Ocultar modal
+            satisfactionModal.classList.remove('show');
+            
             // Mostrar loading
             document.getElementById('btnSubmit').disabled = true;
             document.getElementById('loading').classList.add('show');
 
-            // Preparar datos
-            const formData = new FormData(this);
+            // Preparar datos del formulario
+            const formData = new FormData(contratoForm);
             const data = Object.fromEntries(formData.entries());
             
             // Asegurar que tiene_fiador se envíe como boolean
@@ -759,7 +1051,7 @@
                 document.getElementById('btnSubmit').disabled = false;
                 document.getElementById('loading').classList.remove('show');
             }
-        });
+        }
 
         function showAlert(message, type) {
             const alert = document.getElementById('alert');
@@ -770,6 +1062,73 @@
                 alert.classList.remove('show');
             }, 5000);
         }
+
+        // ============================================
+        // CONVERTIR NOMBRES Y APELLIDOS A MAYÚSCULAS
+        // ============================================
+        const camposNombres = [
+            'nombres_arrendador',
+            'apellido_paterno_arrendador',
+            'apellido_materno_arrendador',
+            'nombres_arrendatario',
+            'apellido_paterno_arrendatario',
+            'apellido_materno_arrendatario',
+            'nombres_fiador',
+            'apellido_paterno_fiador',
+            'apellido_materno_fiador'
+        ];
+
+        camposNombres.forEach(campoId => {
+            const campo = document.getElementById(campoId);
+            if (campo) {
+                // Convertir a mayúsculas mientras se escribe
+                campo.addEventListener('input', function() {
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    this.value = this.value.toUpperCase();
+                    this.setSelectionRange(start, end);
+                });
+            }
+        });
+
+        // ============================================
+        // LÓGICA DE USO DEL INMUEBLE
+        // ============================================
+        const tipoInmuebleSelect = document.getElementById('tipo_inmueble');
+        const usoInmuebleInput = document.getElementById('uso_inmueble');
+
+        tipoInmuebleSelect.addEventListener('change', function() {
+            const tipoSeleccionado = this.value;
+            
+            if (tipoSeleccionado === 'CASA' || tipoSeleccionado === 'DEPARTAMENTO') {
+                // Para casa o departamento: uso predeterminado "VIVIENDA" (readonly)
+                usoInmuebleInput.value = 'VIVIENDA';
+                usoInmuebleInput.readOnly = true;
+                usoInmuebleInput.style.backgroundColor = '#f5f5f5';
+                usoInmuebleInput.style.cursor = 'not-allowed';
+            } else if (tipoSeleccionado) {
+                // Para otros tipos: permitir escritura manual
+                usoInmuebleInput.value = '';
+                usoInmuebleInput.readOnly = false;
+                usoInmuebleInput.style.backgroundColor = '';
+                usoInmuebleInput.style.cursor = '';
+                usoInmuebleInput.placeholder = 'Ingrese el uso del inmueble';
+                
+                // Convertir a mayúsculas mientras escribe
+                usoInmuebleInput.addEventListener('input', function() {
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    this.value = this.value.toUpperCase();
+                    this.setSelectionRange(start, end);
+                });
+            } else {
+                // Si no hay selección, limpiar y deshabilitar
+                usoInmuebleInput.value = '';
+                usoInmuebleInput.readOnly = true;
+                usoInmuebleInput.style.backgroundColor = '#f5f5f5';
+                usoInmuebleInput.style.cursor = 'not-allowed';
+            }
+        });
     </script>
 </body>
 </html>

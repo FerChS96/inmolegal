@@ -70,23 +70,31 @@ class AdminController extends Controller
 
         $query = Contrato::query();
 
-        // Filtros
+        // Filtro de búsqueda
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('token', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('nombres_arrendatario', 'LIKE', "%{$search}%")
-                  ->orWhere('apellido_paterno_arrendatario', 'LIKE', "%{$search}%")
-                  ->orWhere('curp_arrendatario', 'LIKE', "%{$search}%");
+                  ->orWhere('nombre_arrendatario', 'LIKE', "%{$search}%")
+                  ->orWhere('nombre_arrendador', 'LIKE', "%{$search}%")
+                  ->orWhere('curp_arrendatario', 'LIKE', "%{$search}%")
+                  ->orWhere('curp_arrendador', 'LIKE', "%{$search}%")
+                  ->orWhere('ciudad', 'LIKE', "%{$search}%")
+                  ->orWhere('colonia', 'LIKE', "%{$search}%");
             });
         }
 
+        // Filtro por tipo de inmueble
+        if ($request->filled('tipo_inmueble')) {
+            $query->where('tipo_inmueble', $request->tipo_inmueble);
+        }
+
+        // Filtro por estado de pago
         if ($request->filled('estado_pago')) {
             if ($request->estado_pago === 'pagado') {
-                $query->whereNotNull('fecha_pago');
+                $query->where('pagado', true);
             } else {
-                $query->whereNull('fecha_pago');
+                $query->where('pagado', false);
             }
         }
 

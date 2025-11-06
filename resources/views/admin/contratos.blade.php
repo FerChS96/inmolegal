@@ -199,7 +199,19 @@
             <form method="GET" action="{{ route('admin.contratos') }}">
                 <div class="form-group">
                     <label>Buscar</label>
-                    <input type="text" name="search" placeholder="Token, email, nombre, CURP..." value="{{ request('search') }}">
+                    <input type="text" name="search" placeholder="Token, arrendatario, CURP, ciudad..." value="{{ request('search') }}">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Inmueble</label>
+                    <select name="tipo_inmueble">
+                        <option value="">Todos</option>
+                        <option value="Casa" {{ request('tipo_inmueble') === 'Casa' ? 'selected' : '' }}>Casa</option>
+                        <option value="Departamento" {{ request('tipo_inmueble') === 'Departamento' ? 'selected' : '' }}>Departamento</option>
+                        <option value="Local Comercial" {{ request('tipo_inmueble') === 'Local Comercial' ? 'selected' : '' }}>Local Comercial</option>
+                        <option value="Oficina" {{ request('tipo_inmueble') === 'Oficina' ? 'selected' : '' }}>Oficina</option>
+                        <option value="Bodega" {{ request('tipo_inmueble') === 'Bodega' ? 'selected' : '' }}>Bodega</option>
+                        <option value="Terreno" {{ request('tipo_inmueble') === 'Terreno' ? 'selected' : '' }}>Terreno</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Estado de Pago</label>
@@ -220,11 +232,12 @@
                     <tr>
                         <th>Token</th>
                         <th>Arrendatario</th>
-                        <th>Email</th>
-                        <th>Inmueble</th>
+                        <th>Tipo Inmueble</th>
+                        <th>Ubicación</th>
+                        <th>Plazo</th>
                         <th>Renta Mensual</th>
                         <th>Estado Pago</th>
-                        <th>Fecha Creación</th>
+                        <th>Fecha Inicio</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -235,29 +248,26 @@
                                 {{ $contrato->token }}
                             </a>
                         </td>
-                        <td>
-                            {{ $contrato->nombres_arrendatario }} 
-                            {{ $contrato->apellido_paterno_arrendatario }} 
-                            {{ $contrato->apellido_materno_arrendatario }}
-                        </td>
-                        <td>{{ $contrato->email }}</td>
+                        <td>{{ $contrato->nombre_arrendatario }}</td>
+                        <td>{{ ucfirst($contrato->tipo_inmueble) }}</td>
                         <td>
                             {{ $contrato->calle }} #{{ $contrato->numero_exterior }}, 
-                            {{ $contrato->colonia }}
+                            {{ $contrato->colonia }}, {{ $contrato->ciudad }}
                         </td>
+                        <td>{{ $contrato->plazo_meses }} meses</td>
                         <td>${{ number_format($contrato->precio_mensual, 2) }}</td>
                         <td>
-                            @if($contrato->fecha_pago)
+                            @if($contrato->pagado)
                                 <span class="badge badge-success">✓ Pagado</span>
                             @else
                                 <span class="badge badge-warning">⏳ Pendiente</span>
                             @endif
                         </td>
-                        <td>{{ $contrato->created_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($contrato->fecha_inicio)->format('d/m/Y') }}</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="no-results">
+                        <td colspan="8" class="no-results">
                             No se encontraron contratos
                         </td>
                     </tr>

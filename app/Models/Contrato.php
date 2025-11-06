@@ -61,6 +61,18 @@ class Contrato extends Model
         'fecha_pago',
         'metodo_pago',
         'pago_id',
+        
+        // Campos calculados automáticamente
+        'el_arrendador',
+        'el_arrendatario',
+        'inmueble_objeto',
+        'precio_en_letra',
+        'codigo_estado_texto',
+        'cuenta_formateada',
+        'el_fiador',
+        'el_fiador1',
+        'nombre_fiador1',
+        'clausula_fiador',
     ];
 
     protected $casts = [
