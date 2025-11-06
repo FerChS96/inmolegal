@@ -129,21 +129,22 @@ class ClipWebhookController extends Controller
                 return response()->json(['error' => 'Contract not found'], 404);
             }
 
-            // Actualizar el contrato
+            // Actualizar el contrato como pagado
             $contrato->update([
+                'pagado' => true,
                 'fecha_pago' => now(),
                 'monto_pagado' => $pago->amount,
                 'metodo_pago' => 'Clip - ' . ($data['payment_method'] ?? 'Tarjeta'),
             ]);
 
-            Log::info('Contrato actualizado por webhook', [
+            Log::info('Contrato marcado como pagado por webhook', [
                 'contrato_id' => $contrato->idcontrato,
                 'token' => $contrato->token
             ]);
 
-            // Enviar email con PDFs (si no se envió antes)
+            // GENERAR PDFs Y ENVIAR CORREO (solo cuando se confirme el pago)
             if (!$pago->notification_sent) {
-                $this->enviarEmailConPDFs($contrato, $pago);
+                $this->generarPDFsYEnviarCorreo($contrato, $pago);
             }
 
             return response()->json([
@@ -247,36 +248,64 @@ class ClipWebhookController extends Controller
     }
 
     /**
-     * Enviar email con PDFs adjuntos
+     * Generar PDFs y enviar correo con los archivos adjuntos
+     * Este método se ejecuta SOLO cuando Clip confirma el pago exitoso
      */
-    private function enviarEmailConPDFs($contrato, $pago)
+    private function generarPDFsYEnviarCorreo($contrato, $pago)
     {
         try {
-            // Generar PDFs en memoria
+            Log::info('Generando PDFs para contrato pagado', [
+                'contrato_id' => $contrato->idcontrato,
+                'token' => $contrato->token,
+                'forma_pago' => $contrato->forma_pago
+            ]);
+
+            // Generar PDF del Recibo en memoria
             $pdfRecibo = app('dompdf.wrapper')
                 ->loadView('pdf.recibo', ['contrato' => $contrato])
                 ->output();
 
+            // Generar PDF del Contrato en memoria
             $pdfContrato = app('dompdf.wrapper')
                 ->loadView('pdf.contrato', ['contrato' => $contrato])
                 ->output();
 
-            // Enviar email con PDFs adjuntos
-            \Mail::to($contrato->email)->send(new \App\Mail\ContratoGenerado($contrato, $pdfRecibo, $pdfContrato));
+            // Guardar PDFs en storage (opcional, para respaldo)
+            $rutaRecibo = 'contratos/' . $contrato->token . '_recibo.pdf';
+            $rutaContrato = 'contratos/' . $contrato->token . '_contrato.pdf';
+            
+            \Storage::put($rutaRecibo, $pdfRecibo);
+            \Storage::put($rutaContrato, $pdfContrato);
 
-            // Marcar como enviado
+            // Actualizar rutas en el contrato
+            $contrato->update([
+                'pdf_path' => $rutaContrato,
+                'recibo_path' => $rutaRecibo,
+            ]);
+
+            // Enviar email con PDFs adjuntos
+            \Mail::to($contrato->email)->send(
+                new \App\Mail\ContratoGenerado($contrato, $pdfRecibo, $pdfContrato)
+            );
+
+            // Marcar notificación como enviada
             $pago->update(['notification_sent' => true]);
 
-            Log::info('Email con PDFs enviado exitosamente', [
+            Log::info('PDFs generados y email enviado exitosamente', [
                 'email' => $contrato->email,
-                'token' => $contrato->token
+                'token' => $contrato->token,
+                'forma_pago' => $contrato->forma_pago
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error enviando email con PDFs', [
+            Log::error('Error generando PDFs y enviando email', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'contrato_token' => $contrato->token
             ]);
+            
+            // Re-lanzar la excepción para que se pueda reintentar
+            throw $e;
         }
     }
 

@@ -123,8 +123,8 @@ class ContratoController extends Controller
                 );
             }
 
-            // Preparar monto
-            $monto = (float) $request->pago;
+            // PRECIO FIJO: $19 MXN para todos los contratos
+            $monto = 19.00;
 
             // Calcular campos adicionales usando ContratoHelper
             $elArrendador = ContratoHelper::obtenerGeneroYArticulo($request->curp_arrendador, 'ARRENDADOR', 'ARRENDADORA');
@@ -205,8 +205,9 @@ class ContratoController extends Controller
                 'amount' => $monto,
                 'currency' => 'MXN',
                 'status' => 'pending',
-                'description' => 'Generación de Contrato de Arrendamiento',
+                'description' => 'Generación de Contrato de Arrendamiento - ' . $request->forma_pago,
                 'customer_email' => $request->email,
+                'payment_method' => $request->forma_pago, // TRANSFERENCIA o EFECTIVO
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);

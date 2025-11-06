@@ -88,19 +88,16 @@ class ClipPaymentController extends Controller
             }
 
             // MODO REAL: Crear checkout en Clip
+            $formaPago = $contrato->forma_pago; // TRANSFERENCIA o EFECTIVO
+            
             Log::info('Intentando crear checkout en Clip', [
                 'api_url' => $this->apiUrl . '/v2/checkout',
                 'amount' => $pago->amount,
+                'forma_pago' => $formaPago,
             ]);
             
-            // Clip requiere Basic Auth con API_KEY:SECRET_KEY
-            $response = Http::withOptions([
-                'verify' => false, // Deshabilitar verificación SSL solo para desarrollo
-            ])->withBasicAuth($this->apiKey, env('CLIP_SECRET_KEY'))
-              ->withHeaders([
-                'accept' => 'application/json',
-                'content-type' => 'application/json',
-            ])->post($this->apiUrl . '/v2/checkout', [
+            // Preparar payload base
+            $checkoutData = [
                 'amount' => $pago->amount,
                 'currency' => 'MXN',
                 'purchase_description' => $pago->description,
@@ -114,8 +111,24 @@ class ClipPaymentController extends Controller
                     'contrato_id' => $contrato->idcontrato,
                     'token' => $contrato->token,
                     'customer_email' => $pago->customer_email,
+                    'forma_pago' => $formaPago,
                 ],
-            ]);
+            ];
+
+            // Si es pago en EFECTIVO, configurar para pago en tienda/efectivo
+            if ($formaPago === 'EFECTIVO') {
+                $checkoutData['payment_method'] = 'cash'; // o 'store' según la API de Clip
+                Log::info('Configurando pago en EFECTIVO para Clip');
+            }
+            
+            // Clip requiere Basic Auth con API_KEY:SECRET_KEY
+            $response = Http::withOptions([
+                'verify' => false, // Deshabilitar verificación SSL solo para desarrollo
+            ])->withBasicAuth($this->apiKey, $this->secretKey)
+              ->withHeaders([
+                'accept' => 'application/json',
+                'content-type' => 'application/json',
+            ])->post($this->apiUrl . '/v2/checkout', $checkoutData);
 
             if ($response->successful()) {
                 $clipData = $response->json();
@@ -133,6 +146,29 @@ class ClipPaymentController extends Controller
                     'payment_expires_at' => $clipData['expires_at'] ?? null,
                     'clip_checkout_response' => $clipData,
                 ]);
+
+                // Si es pago en EFECTIVO, enviar correo con token (sin PDFs)
+                if ($formaPago === 'EFECTIVO') {
+                    try {
+                        \Mail::to($contrato->email)->send(
+                            new \App\Mail\PagoEfectivoPendiente(
+                                $contrato, 
+                                $pago, 
+                                $clipData['payment_request_url']
+                            )
+                        );
+                        
+                        Log::info('Email de pago en efectivo enviado', [
+                            'email' => $contrato->email,
+                            'token' => $contrato->token
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error enviando email de pago en efectivo', [
+                            'error' => $e->getMessage(),
+                            'token' => $contrato->token
+                        ]);
+                    }
+                }
 
                 // Redirigir al checkout de Clip
                 return redirect($clipData['payment_request_url']);
