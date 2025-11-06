@@ -131,13 +131,13 @@
             </ul>
         </div>
 
-        @if($contrato->pagado && $contrato->pdf_path)
+        @if($contrato->pagado)
             <a href="{{ $downloadUrl }}" class="btn-download">
                 📥 Descargar Contrato PDF
             </a>
         @else
             <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 10px;">
-                <p style="color: #92400e;">⏳ Su PDF se está generando. Recibirá un email en breve.</p>
+                <p style="color: #92400e;">⏳ Pago pendiente. Recibirá un email cuando se confirme el pago.</p>
             </div>
         @endif
 

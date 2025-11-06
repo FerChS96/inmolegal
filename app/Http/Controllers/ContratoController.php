@@ -232,6 +232,7 @@ class ContratoController extends Controller
 
     /**
      * Descargar PDF del contrato usando el token
+     * Los PDFs se generan bajo demanda, no se guardan en el servidor
      */
     public function descargar($token)
     {
@@ -241,17 +242,16 @@ class ContratoController extends Controller
             abort(403, 'Este contrato no ha sido pagado aún');
         }
 
-        if (!$contrato->pdf_path || !file_exists(storage_path('app/' . $contrato->pdf_path))) {
-            abort(404, 'PDF no encontrado');
-        }
+        // Generar PDF bajo demanda
+        $pdf = app('dompdf.wrapper')
+            ->loadView('pdf.contrato', ['contrato' => $contrato])
+            ->setPaper('letter');
 
         // Incrementar contador de descargas
         $contrato->incrementarDescargas();
 
-        return response()->download(
-            storage_path('app/' . $contrato->pdf_path),
-            "contrato_{$token}.pdf"
-        );
+        // Descargar PDF (generado en memoria, no guardado)
+        return $pdf->download("contrato_{$token}.pdf");
     }
 
     /**

@@ -270,20 +270,7 @@ class ClipWebhookController extends Controller
                 ->loadView('pdf.contrato', ['contrato' => $contrato])
                 ->output();
 
-            // Guardar PDFs en storage (opcional, para respaldo)
-            $rutaRecibo = 'contratos/' . $contrato->token . '_recibo.pdf';
-            $rutaContrato = 'contratos/' . $contrato->token . '_contrato.pdf';
-            
-            \Storage::put($rutaRecibo, $pdfRecibo);
-            \Storage::put($rutaContrato, $pdfContrato);
-
-            // Actualizar rutas en el contrato
-            $contrato->update([
-                'pdf_path' => $rutaContrato,
-                'recibo_path' => $rutaRecibo,
-            ]);
-
-            // Enviar email con PDFs adjuntos
+            // Enviar email con PDFs adjuntos (los PDFs solo existen en memoria, no se guardan)
             \Mail::to($contrato->email)->send(
                 new \App\Mail\ContratoGenerado($contrato, $pdfRecibo, $pdfContrato)
             );

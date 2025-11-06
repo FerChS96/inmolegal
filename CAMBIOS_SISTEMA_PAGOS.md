@@ -21,11 +21,11 @@ Se implementó un nuevo sistema de pagos con las siguientes características:
 4. Se redirige a Clip para pago con tarjeta/transferencia
 5. Usuario completa el pago en Clip
 6. **Webhook de Clip confirma el pago**
-7. **Se generan los PDFs automáticamente:**
+7. **Se generan los PDFs en memoria:**
    - PDF del Contrato de Arrendamiento
    - PDF del Recibo de Pago
-8. **Se guardan los PDFs en storage** (`storage/app/contratos/`)
-9. **Se envía correo con PDFs adjuntos**
+8. **Se envían los PDFs por correo electrónico** (adjuntos)
+9. **Los PDFs NO se guardan en el servidor** (solo existen en memoria)
 10. Se marca `contrato.pagado = true`
 
 **Archivos modificados:**
@@ -47,11 +47,11 @@ Se implementó un nuevo sistema de pagos con las siguientes características:
 6. Usuario recibe referencia de pago en efectivo de Clip
 7. Usuario realiza el pago en tienda física
 8. **Webhook de Clip confirma el pago**
-9. **Se generan los PDFs automáticamente:**
+9. **Se generan los PDFs en memoria:**
    - PDF del Contrato de Arrendamiento
    - PDF del Recibo de Pago
-10. **Se guardan los PDFs en storage**
-11. **Se envía SEGUNDO correo con PDFs adjuntos**
+10. **Se envían los PDFs por correo electrónico** (adjuntos)
+11. **Los PDFs NO se guardan en el servidor** (solo existen en memoria)
 12. Se marca `contrato.pagado = true`
 
 **Archivos nuevos:**
@@ -70,35 +70,41 @@ El webhook (`/webhook/clip`) maneja los siguientes eventos:
 
 **IMPORTANTE:** Los PDFs **SOLO** se generan cuando el webhook confirma el pago exitoso, independientemente del método de pago (TRANSFERENCIA o EFECTIVO).
 
-### 5. **Base de Datos**
+### 5. **Generación de PDFs**
 
-**Nuevas columnas en `contratos`:**
-```sql
-ALTER TABLE contratos 
-ADD COLUMN pdf_path VARCHAR(255) NULL,
-ADD COLUMN recibo_path VARCHAR(255) NULL;
-```
+**Estrategia: Generación bajo demanda**
+- ✅ Los PDFs se generan **en memoria** cuando se necesitan
+- ✅ **NO se guardan** en el servidor (sin almacenamiento)
+- ✅ Se generan en estos momentos:
+  - Al enviar email después del webhook (adjuntos)
+  - Al descargar mediante el token
+- ✅ Ventajas:
+  - No consume espacio en disco
+  - Siempre se genera con datos actualizados
+  - Más seguro (no hay archivos sensibles almacenados)
 
-**Columnas usadas en `pagos`:**
-- `payment_method` - Guarda 'TRANSFERENCIA' o 'EFECTIVO'
-- `notification_sent` - Control para no enviar email duplicado
-- `processed` - Marca si el pago ya fue procesado
+**Ubicaciones donde se generan:**
+- `ClipWebhookController::generarPDFsYEnviarCorreo()` - Para envío por email
+- `ContratoController::descargar()` - Para descarga directa
 
 ### 6. **Archivos Modificados**
 
 ```
 app/
   ├── Http/Controllers/
-  │   ├── ContratoController.php ............... Precio fijo $19, guarda payment_method
+  │   ├── ContratoController.php ............... Precio fijo $19, descarga bajo demanda
   │   ├── ClipPaymentController.php ............ Detecta tipo de pago, envía email si EFECTIVO
-  │   └── ClipWebhookController.php ............ Genera PDFs y envía correo al confirmar pago
+  │   └── ClipWebhookController.php ............ Genera PDFs en memoria al confirmar pago
   └── Mail/
       ├── ContratoGenerado.php ................. Email con PDFs (TRANSFERENCIA o EFECTIVO confirmado)
       └── PagoEfectivoPendiente.php ............ Email con TOKEN (solo EFECTIVO pendiente) [NUEVO]
 
-resources/views/emails/
-  ├── contrato-generado.blade.php .............. Vista email con PDFs
-  └── pago-efectivo-pendiente.blade.php ........ Vista email con TOKEN [NUEVO]
+resources/views/
+  ├── contratos/
+  │   └── success.blade.php .................... Muestra descarga solo si pagado=true
+  └── emails/
+      ├── contrato-generado.blade.php .......... Vista email con PDFs
+      └── pago-efectivo-pendiente.blade.php .... Vista email con TOKEN [NUEVO]
 ```
 
 ## Testing
@@ -119,18 +125,20 @@ resources/views/emails/
 
 ## Notas Importantes
 
-⚠️ **Los PDFs se generan SOLO después de que Clip confirme el pago** (vía webhook)  
+⚠️ **Los PDFs se generan SOLO en memoria** (no se guardan en el servidor)  
+⚠️ **Los PDFs se generan cuando:**
+- Webhook de Clip confirma el pago (para envío por email)
+- Usuario descarga usando el token (generación bajo demanda)  
 ⚠️ **Para EFECTIVO:** Se envían 2 correos (primero token, luego PDFs)  
 ⚠️ **Para TRANSFERENCIA:** Se envía 1 correo (con PDFs después del webhook)  
 ⚠️ **Webhook debe estar configurado en Clip:** https://oceanairti.sytes.net/inmolegal/webhook/clip
 
 ## Pendientes
 
-- [ ] Ejecutar migración para agregar `pdf_path` y `recibo_path` a la tabla `contratos`
+- [ ] Configurar webhook en panel de Clip
 - [ ] Probar flujo completo de pago en efectivo con Clip sandbox
-- [ ] Verificar que el webhook esté registrado en el panel de Clip
-- [ ] Confirmar formato de evento del webhook de Clip para pagos en efectivo
-- [ ] Implementar reintento automático de generación de PDF si falla
+- [ ] Verificar formato de evento del webhook de Clip para pagos en efectivo
+- [ ] Implementar reintento automático de generación de PDF si falla el envío de email
 
 ## Próximos Pasos
 
