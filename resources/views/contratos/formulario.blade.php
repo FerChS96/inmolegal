@@ -425,14 +425,6 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="input-group">
-                            <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico *</label>
-                            <input type="email" id="email" name="email" required>
-                            <span class="error-message">Ingrese un email válido</span>
-                        </div>
-                    </div>
-
                     <div class="checkbox-group">
                         <input type="checkbox" id="tiene_fiador" name="tiene_fiador">
                         <label for="tiene_fiador"><i class="fa-solid fa-user-shield"></i> ¿Cuenta con fiador/obligado solidario?</label>
@@ -605,6 +597,17 @@
                             </label>
                             <input type="text" id="cuenta_domicilio" name="cuenta_domicilio" maxlength="255">
                             <span class="error-message" id="cuenta_domicilio_error">Este campo es requerido</span>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend><i class="fa-solid fa-envelope"></i> Correo Electrónico</legend>
+                    <div class="row">
+                        <div class="input-group">
+                            <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico *</label>
+                            <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+                            <span class="error-message">Ingrese un email válido</span>
                         </div>
                     </div>
                 </fieldset>
